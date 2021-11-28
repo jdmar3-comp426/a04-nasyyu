@@ -24,10 +24,10 @@ app.get("/app/", (req, res, next) => {
 // Define other CRUD API endpoints using express.js and better-sqlite3
 // CREATE a new user (HTTP method POST) at endpoint /app/new/
 app.post("/app/users/", (req, res) => {	
-	let username = req.body.user;
-	let password = md5(req.body.pass)
-	const stmt = db.prepare("INSERT INTO userinfo (user, pass) VALUES (?, ?)").run(username, password);
-	res.json({"message":`1 user createed: user ${username} (201)`});
+	let user = req.body.user;
+	let pass = md5(req.body.pass)
+	const stmt = db.prepare("INSERT INTO userinfo (user, pass) VALUES (?, ?)").run(user, pass);
+	res.json({"message":`1 user createed: user ${user} (201)`});
 	res.status(201);
 });
 // READ a list of all users (HTTP method GET) at endpoint /app/users/
@@ -38,24 +38,21 @@ app.get("/app/users/", (req, res) => {
 
 // READ a single user (HTTP method GET) at endpoint /app/user/:id
 app.get("/app/users/:id", (req, res) => {
-	var id = req.params.id;	
-	const stmt = db.prepare(`SELECT * FROM userinfo WHERE id = ${id}`).get(id);
+	const stmt = db.prepare(`SELECT * FROM userinfo WHERE id = ${req.params.id}`).get(req.params.id);
 	res.status(200).json(stmt);
 });
 // UPDATE a single user (HTTP method PATCH) at endpoint /app/update/user/:id
 app.patch("/app/update/user/:id", (req, res) => {	
 	var user = req.body.user;
 	var pass = md5(req.body.pass);
-	var id = req.params.id;
-	const stmt = db.prepare("update userinfo set user = coalesce(?, user), pass = coalesce(?, pass) where id = ?").run(user, pass, id);
-	res.json({"message":`1 record updated: ID ${id} (200)`});
+	const stmt = db.prepare("UPDATE userinfo SET user = COALESCE(?, user), pass = COALESCE(?, pass) where id = ?").run(user, pass, req.params.id);
+	res.json({"message":`1 record updated: ID ${req.params.id} (200)`});
 	res.status(200);
 });
 // DELETE a single user (HTTP method DELETE) at endpoint /app/delete/user/:id
 app.delete("/app/delete/user/:id", (req, res) => {	
-	var id = req.params.id;
-	const stmt = db.prepare("DELETE FROM userinfo WHERE id = ?").run(id);
-	res.json({"message":`1 record deleted: ID ${id} (200)`});
+	const stmt = db.prepare("DELETE FROM userinfo WHERE id = ?").run(req.params.id);
+	res.json({"message":`1 record deleted: ID ${req.params.id} (200)`});
 	res.status(200);
 });
 // Default response for any other request
